@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 36 29% 97%;
+  --foreground: 24 24% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 24 24% 12%;
+  --primary: 22 76% 46%;
+  --primary-foreground: 40 40% 98%;
+  --muted: 35 22% 92%;
+  --muted-foreground: 25 12% 38%;
+  --accent: 45 88% 92%;
+  --accent-foreground: 24 24% 12%;
+  --destructive: 0 74% 52%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 28 18% 84%;
+  --input: 28 18% 84%;
+  --ring: 22 76% 46%;
+  --radius: 1rem;
+  --font-display: "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Sans", "Trebuchet MS", sans-serif;
+}
+
+* {
+  @apply border-border;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  background-image:
+    radial-gradient(circle at top left, rgba(248, 191, 82, 0.15), transparent 32%),
+    linear-gradient(180deg, rgba(120, 53, 15, 0.03), transparent 24%);
+}
+
+.panel-grid {
+  background-image:
+    linear-gradient(rgba(120, 53, 15, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 53, 15, 0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.timer-critical {
+  animation: pulse-ring 1s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.04);
+  }
+}

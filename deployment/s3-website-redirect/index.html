@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SKCT Prep Redirect</title>
+    <meta http-equiv="refresh" content="0; url=http://3.235.55.170:3000/" />
+    <script>
+      (function redirect() {
+        var target = "http://3.235.55.170:3000" + window.location.pathname + window.location.search + window.location.hash;
+        window.location.replace(target);
+      })();
+    </script>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f6f1e8;
+        color: #1f1a17;
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+      }
+      .box {
+        width: min(520px, calc(100vw - 32px));
+        background: #fff;
+        border: 1px solid #d9cec0;
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 12px 28px rgba(31, 26, 23, 0.08);
+      }
+      a { color: #b4581b; }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <h1>SKCT Prep으로 이동 중입니다.</h1>
+      <p>자동으로 이동하지 않으면 아래 링크를 눌러 주세요.</p>
+      <p><a href="http://3.235.55.170:3000/">서비스 열기</a></p>
+    </div>
+  </body>
+</html>

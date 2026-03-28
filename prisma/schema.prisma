@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum SessionMode {
+  FULL_MOCK
+  FULL_WRONG
+  MINI_WRONG
+  WEAK_TYPE_WRONG
+}
+
+enum SessionStatus {
+  READY
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum SelfAssessment {
+  CORRECT
+  UNSURE
+  WRONG
+}
+
+enum ReviewState {
+  NEW
+  REVIEWING
+  IMPROVING
+  STABLE
+}
+
+enum ImportedWrongQuestionStatus {
+  OCR_PENDING
+  OCR_COMPLETED
+  CONFIRMED
+}
+
+model User {
+  id                 String            @id @default(cuid())
+  phone              String            @unique
+  passwordHash       String
+  name               String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  attempts           UserAttempt[]
+  wrongAnswerHistory WrongAnswerHistory[]
+  sessions           MockTestSession[]
+  aiReviewLogs       AIReviewLog[]
+  memos              Memo[]
+  authSessions       AuthSession[]
+  importedWrongQuestions ImportedWrongQuestion[]
+}
+
+model AuthSession {
+  id          String   @id @default(cuid())
+  userId      String
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model QuestionType {
+  id                 String               @id @default(cuid())
+  key                String               @unique
+  name               String
+  description        String?
+  sectionOrder       Int
+  defaultTimeSeconds Int                  @default(45)
+  questions          Question[]
+  sessionQuestions   MockTestSessionQuestion[]
+  wrongAnswerHistory WrongAnswerHistory[]
+}
+
+model Question {
+  id                 String                   @id @default(cuid())
+  code               String                   @unique
+  typeId             String
+  prompt             String
+  passage            String?
+  difficulty         Int                      @default(2)
+  explanation        String
+  fastStrategy       String
+  commonTrap         String
+  takeaway           String
+  calculatorAllowed  Boolean                  @default(true)
+  tags               String   @default("")
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  type               QuestionType             @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  choices            AnswerChoice[]
+  attempts           UserAttempt[]
+  sessionQuestions   MockTestSessionQuestion[]
+  wrongAnswerHistory WrongAnswerHistory[]
+  aiReviewLogs       AIReviewLog[]
+  memos              Memo[]
+  importedWrongQuestion ImportedWrongQuestion?
+}
+
+model AnswerChoice {
+  id         String   @id @default(cuid())
+  questionId String
+  label      String
+  content    String
+  orderIndex Int
+  isCorrect  Boolean  @default(false)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, label])
+}
+
+model MockTestSession {
+  id                 String                    @id @default(cuid())
+  userId             String
+  mode               SessionMode
+  status             SessionStatus             @default(READY)
+  title              String
+  config             Json?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  user               User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionQuestions   MockTestSessionQuestion[]
+  attempts           UserAttempt[]
+  aiReviewLogs       AIReviewLog[]
+  memos              Memo[]
+}
+
+model MockTestSessionQuestion {
+  id                String          @id @default(cuid())
+  sessionId         String
+  questionId        String
+  questionTypeId    String
+  orderIndex        Int
+  timeLimitSeconds  Int
+  createdAt         DateTime        @default(now())
+  session           MockTestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question          Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionType      QuestionType    @relation(fields: [questionTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, orderIndex])
+  @@unique([sessionId, questionId])
+}
+
+model UserAttempt {
+  id               String           @id @default(cuid())
+  userId           String
+  questionId       String
+  sessionId        String?
+  selectedChoiceId String?
+  selfAssessment   SelfAssessment?
+  elapsedSeconds   Int              @default(0)
+  isCorrect        Boolean          @default(false)
+  attemptedAt      DateTime         @default(now())
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question         Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  session          MockTestSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+}
+
+model WrongAnswerHistory {
+  id              String       @id @default(cuid())
+  userId          String
+  questionId      String
+  questionTypeId  String
+  wrongCount      Int          @default(0)
+  unsureCount     Int          @default(0)
+  correctCount    Int          @default(0)
+  strengthScore   Float        @default(0)
+  lastOutcome     SelfAssessment?
+  lastAttemptedAt DateTime?
+  reviewState     ReviewState  @default(NEW)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question        Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionType    QuestionType @relation(fields: [questionTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+}
+
+model AIReviewLog {
+  id         String           @id @default(cuid())
+  userId     String
+  questionId String
+  sessionId  String?
+  provider   String
+  model      String
+  prompt     String
+  response   String
+  latencyMs  Int?
+  createdAt  DateTime         @default(now())
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question   Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  session    MockTestSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+}
+
+model Memo {
+  id         String           @id @default(cuid())
+  userId     String
+  questionId String
+  sessionId  String
+  content    String
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question   Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  session    MockTestSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, questionId])
+}
+
+model ImportedWrongQuestion {
+  id               String                      @id @default(cuid())
+  userId           String
+  questionId       String?                     @unique
+  title            String?
+  sourceImageData  String?                     @db.LongText
+  hasVisual        Boolean                     @default(false)
+  visualType       String?
+  extractedText    String?                     @db.LongText
+  confirmedText    String?                     @db.LongText
+  suggestedTypeKey String?
+  status           ImportedWrongQuestionStatus @default(OCR_PENDING)
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime                    @updatedAt
+  user             User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question         Question?                   @relation(fields: [questionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+}
