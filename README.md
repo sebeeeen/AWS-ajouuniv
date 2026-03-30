@@ -8,6 +8,19 @@
 
 **NXT CLOUD 아이디어톤 특별상 수상 프로젝트**입니다.
 
+## Awards & Certificates
+
+<p align="center">
+  <img src="./image.png" alt="NXT CLOUD 아이디어톤 특별상 상장" width="48%" />
+  <img src="./image-1.png" alt="NXT CLOUD 아이디어톤 수료증" width="48%" />
+</p>
+
+<p align="center">
+  <sub>상장</sub>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <sub>수료증</sub>
+</p>
+
 ## Overview
 
 실제 시험 흐름에 맞춘 풀이 환경 위에 오답 재훈련과 전략 중심 복기를 결합한 서비스입니다.  
